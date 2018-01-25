@@ -34,7 +34,8 @@ WHERE
 		name LIKE '%Dé%';
     
 SELECT
-	*
+	user.id,
+    count(*)
 FROM
 	user
     INNER JOIN
