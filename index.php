@@ -28,21 +28,49 @@ $app->get('/', function ($request, $response, $args) {
         ->withJson($data);
 });
 
-$app->get('/kakukk', function ($request, $response, $args) {
-    return $response->withStatus(200)->write('kakukk');
-});
+$app->get('/users/{gid}', function ($request, $response, $args) {
 
-$app->get('/hello/{name}', function ($request, $response, $args) {
+    $ab = getdb();
+    $xyz = $ab->prepare(
+        "SELECT * FROM user WHERE gid = :pgid");
+    $xyz->bindParam(":pgid", $args["gid"]);
+    $xyz->execute();
+
+    $data = $xyz->fetchAll(PDO::FETCH_ASSOC);
+    $xyz->closeCursor();
+
     return $response
         ->withStatus(200)
-        ->write('Hello, '. $args["name"] . ' !');
+        ->withJson($data);
 });
 
-$app->get('/hello/{name}/{name2}', function ($request, $response, $args) {
+$app->post('/users', function ($request, $response, $args) {
+
+    $so = getdb();
+    $ff = $so->prepare(
+        "CALL addUser(:name, :username, :pwdhash);");
+    $o = $request->getParsedBody();
+    $kamu = 'abc';
+    $ff->bindParam(":name",$o["name"]);
+    $ff->bindParam(":username",$o["username"]);
+    $ff->bindParam(":pwdhash",$kamu);
+    $ff->execute();
+
     return $response
         ->withStatus(200)
-        ->write('Hello, '. $args["name"]. ' ' . $args["name2"] . ' !');
+        ->write(
+                print_r($request->getParsedBody())
+            );
 });
+
+$app->get('/users/{gid}/todos', function ($request, $response, $args) {
+
+    $args["gid"]
+
+    $rd = getdb();
+
+});
+
 
 $app->run();
 
