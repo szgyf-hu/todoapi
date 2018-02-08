@@ -77,6 +77,30 @@ $app->get('/users/{gid}/todos', function ($request, $response, $args) {
         ->withJson($ads);
 });
 
+$app->post('/users/{gid}/todos', function ($request, $response, $args) {
+
+    $rd = getdb();
+
+    $xx = $rd->prepare('CALL addUserTodoBygid(:user_gid, :note, :priority, :timestamp, @todo_gid);');
+
+    $js = $request->getParsedBody();
+
+    $xx->bindParam(":user_gid",$args["gid"]);
+    $xx->bindParam(":note",$js["note"]);
+    $xx->bindParam(":priority",$js["priority"]);
+    $xx->bindParam(":timestamp",$js["timestamp"]);
+    $xx->execute();
+    $xx->closeCursor();
+
+    $output = $rd
+        ->query("SELECT @todo_gid;")
+        ->fetch(PDO::FETCH_ASSOC);
+
+    return $response
+        ->withStatus(200)
+        ->withJson($output);
+});
+
 
 $app->run();
 
