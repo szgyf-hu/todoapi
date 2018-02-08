@@ -65,10 +65,16 @@ $app->post('/users', function ($request, $response, $args) {
 
 $app->get('/users/{gid}/todos', function ($request, $response, $args) {
 
-    $args["gid"]
-
     $rd = getdb();
 
+    $xx = $rd->prepare('CALL getUserTodos(:gid);');
+    $xx->bindParam(":gid",$args["gid"]);
+    $xx->execute();
+    $ads = $xx->fetchAll(PDO::FETCH_ASSOC);
+
+    return $response
+        ->withStatus(200)
+        ->withJson($ads);
 });
 
 
