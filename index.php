@@ -11,17 +11,14 @@ function getdb()
             "root",
             "");
 
-
-    //$connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
     return $connection;
 }
+
 $app->get('/', function ($request, $response, $args) {
-    $db = getdb();
-    $stmt = $db->prepare("SELECT * FROM user");
-    $stmt->execute();
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt->closeCursor();
+
+    $data = array();
+    $data["name"] = "todoapi";
+    $data["version"] = "0.1 beta";
 
     return $response
         ->withStatus(200)
@@ -43,6 +40,10 @@ $app->get('/users/{gid}', function ($request, $response, $args) {
         ->withStatus(200)
         ->withJson($data);
 });
+
+///////////////////////////////////////////////////
+/// POST
+///////////////////////////////////////////////////
 
 $app->post('/users', function ($request, $response, $args) {
 
@@ -81,14 +82,14 @@ $app->post('/users/{gid}/todos', function ($request, $response, $args) {
 
     $rd = getdb();
 
-    $xx = $rd->prepare('CALL addUserTodoBygid(:user_gid, :note, :priority, :timestamp, @todo_gid);');
+    $xx = $rd->prepare('CALL addUserTodoBygid(:user_gid, :note, :priority, :created_timestamp, @todo_gid);');
 
     $js = $request->getParsedBody();
 
     $xx->bindParam(":user_gid",$args["gid"]);
     $xx->bindParam(":note",$js["note"]);
     $xx->bindParam(":priority",$js["priority"]);
-    $xx->bindParam(":timestamp",$js["timestamp"]);
+    $xx->bindParam(":created_timestamp",$js["created_timestamp"]);
     $xx->execute();
     $xx->closeCursor();
 
@@ -101,6 +102,29 @@ $app->post('/users/{gid}/todos', function ($request, $response, $args) {
         ->withJson($output);
 });
 
+$app->put("/todos/{gid}", function ($request, $response, $args) {
+
+    $js = $request->getParsedBody();
+
+    $rd = getdb();
+    $xx = $rd->prepare("
+UPDATE todo
+SET
+	note = :note,
+    priority = :priority,
+    done = :done
+WHERE
+	gid = :gid");
+
+    $xx->bindParam(":note",$js["note"]);
+    $xx->bindParam(":priority",$js["priority"]);
+    $xx->bindParam(":done",$js["done"]);
+    $xx->bindParam(":gid",$args["gid"]);
+    $xx->execute();
+
+    return $response
+        ->withStatus(200);
+});
 
 $app->run();
 
