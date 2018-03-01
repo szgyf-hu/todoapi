@@ -11,6 +11,14 @@ function getdb()
             "root",
             "");
 
+    $connection->setAttribute(
+        PDO::ATTR_EMULATE_PREPARES,
+        false);
+
+    $connection->setAttribute(
+        PDO::ATTR_STRINGIFY_FETCHES,
+        false);
+
     return $connection;
 }
 
@@ -36,9 +44,13 @@ $app->get('/users/{gid}', function ($request, $response, $args) {
     $data = $xyz->fetchAll(PDO::FETCH_ASSOC);
     $xyz->closeCursor();
 
-    return $response
-        ->withStatus(200)
-        ->withJson($data);
+    if (count($data)>0)
+        return $response
+            ->withStatus(200)
+            ->withJson($data[0]);
+    else
+        return $response
+            ->withStatus(404);
 });
 
 ///////////////////////////////////////////////////
