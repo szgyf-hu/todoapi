@@ -126,6 +126,25 @@ WHERE
         ->withStatus(200);
 });
 
+$app->post("/usergroup/{gid}",
+    function ($request, $response, $args) {
+
+    $js = $request->getParsedBody();
+
+    $rd = getdb();
+    $xx = $rd->prepare(
+        "CALL addUserToUsergroupBygid(
+        :user_gid, :usergroup_gid);");
+
+    $xx->bindParam(":user_gid",
+        $js["user_gid"]);
+    $xx->bindParam(":usergroup_gid",
+        $args["gid"]);
+    $xx->execute();
+
+    return $response->withStatus(200);
+});
+
 $app->run();
 
 
